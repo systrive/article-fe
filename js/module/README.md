@@ -10,7 +10,7 @@
 
 因为有了模块，我们能更好的管理网页的业务逻辑，可以按照自己的需求去设计、使用各种模块。JS 模块规范有很多，目前比较流行的有：
 
-* <a href="CommonJS">CommonJS</a>
+* <a href="#CommonJS">CommonJS</a>
 * AMD
 * CMD
 * ES6 module
