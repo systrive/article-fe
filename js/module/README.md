@@ -11,9 +11,9 @@
 因为有了模块，我们能更好的管理网页的业务逻辑，可以按照自己的需求去设计、使用各种模块。JS 模块规范有很多，目前比较流行的有：
 
 * <a href="#CommonJS">CommonJS</a>
-* AMD
-* CMD
-* ES6 module
+* <a href="#amd">AMD</a>
+* <a href="#cmd">CMD</a>
+* <a href="#es6">ES6 module</a>
 
 ## <a id="CommonJS">CommonJS</a>
 
@@ -320,20 +320,21 @@ Module.prototype._compole = function (content, filename) {
 
 `Module._compile` 方法是同步执行的，所以`Module._load` 要等它执行完成，才会向用户返回 `module.exports` 的值。
 
-## AMD（Asynchronous Module Definition）：异步模块定义
-
+## <a id="amd">AMD（Asynchronous Module Definition）：异步模块定义</a>
 
 与 CommonJS 规范同步加载模块不一样，AMD 规范采用异步加载模块，模块的加载不影响后面语句的运行，所有依赖这个模块的语句都定义在回调函数中，等到模块加载完成后，回调函数才会执行。
 
 由于 Node.js 主要用于服务器编程，模块文件已经在本地磁盘，所以加载起来比较快，不用考虑非同步加载的方式，所以 CommonJS 规范比较适用。但是，如果是浏览器环境，要从服务器端加载模块，这时就必须采用非同步模式，因此浏览器一般采用 AMD 规范。
 
-由于 JavaScript 原生不支持，使用 AMD 规范开发需要用到对应的库函数，这里介绍 requirejs 库实现 AMD 规范模块化。
+由于 JavaScript 原生不支持，使用 AMD 规范开发需要用到对应的库函数，这里介绍 requirejs 库实现 AMD 规范模块化。
 
-### 语法
+### 语法
 
 * require.config：指定引用路径
-* define：定义模块
+* define：定义模块
 * require：加载模块
+
+#### `require.config` 指定引用路径方法
 
 ```
 // html 中引用 require.js 以及 main.js
@@ -353,22 +354,240 @@ require(['jquery', 'underscore'], function ($, _) {
 })
 ```
 
-AMD 规范允许输出的模块兼容 CommonJS 规范，这时，`define` 方法需要写成这样：
+#### define：定义模块
+
+`define` 是一个全局函数，用来定义模块。书写格式：
 
 ```
-define(function (require, exports, module) {
-    var someModule = require('someModule')
-    var anotherModule = require('anotherModule')
+define(id?, deps?, factory)
+```
 
-    someModule.doTheAwesome()
-    anotherModule.doMoarAwesome()
+其中，
+* id：字符串，表示模块标识
+* deps：数组，标识模块依赖
+* factory：可以是函数、字符串、对象。如果是字符串和对象，表示模块的接口就是该对象、字符串；factory 为函数时，表示是模块的构造方法。执行该构造方法，可以得到模块向外提供的接口。factory 方法在执行时，默认会传入三个参数：require、exports 和 module：
 
-    exports.asplode = function () {
-        someModule.doTheAwesome()
-        anotherModule.doMoarAwesome()
+```
+// 定义没有依赖的模块：math.js
+define(function () {
+    var add = function (x, y) {
+        return x + y
+    }
+    return { add }
+})
+
+// 定义有依赖 module1 和 module2 的模块
+define(['module1', 'module2'], function (require, exports, module) {
+    return 模块
+})
+
+// 返回一个对象
+define({ "foo": "bar" })
+
+// 返回一个字符串
+define('Hello World!')
+
+// 也可以通过字符串定义模板模块
+define('I am a template. My name is {{name}}.')
+```
+
+#### require：引用模块
+
+require 是一个方法，接受 模块标识 作为唯一参数，用来获取其他模块提供的接口。
+
+```
+require(['jquery', 'math'],function($, math){
+  var sum = math.add(10,20);
+  $("#sum").html(sum);
+});
+```
+
+`require.resolve(id)`：使用模块系统内部的路径解析机制来解析并返回模块路径。该函数不会加载模块，只返回解析后的绝对路径。
+
+```
+define(function (require, exports) {
+    console.log(require.resolve('./b')) // http://example.com/path/to/b.js
+})
+```
+
+`require.async(id, callback?)`：在模块内部异步加载模块，并在加载完成后执行指定回调。callback 参数可选。
+
+```
+define(function(require, exports, module) {
+
+  // 异步加载一个模块，在加载完成时，执行回调
+  require.async('./b', function(b) {
+    b.doSomething();
+  });
+
+  // 异步加载多个模块，在加载完成时，执行回调
+  require.async(['./c', './d'], function(c, d) {
+    c.doSomething();
+    d.doSomething();
+  });
+
+});
+```
+
+注意：require 是同步往下执行，require.async 则是异步回调执行。require.async 一般用来加载可延迟异步加载的模块。
+
+## <a id="cmd">CMD</a>
+
+CMD 是 SeaJS 在推广过程中对模块定义的规范化产出，而AMD 是 RequireJS 在推广过程中对模块定义的规范化产出。
+
+CMD 与 AMD 很相似，只不过 AMD 推崇依赖前置、提前执行，CMD 推崇依赖就近、延迟执行。
+
+### 用法
+
+#### define
+
+define 为全局函数，定义模块。
+
+```
+define(id?, dependcies?, factory)
+```
+
+其中：
+* id：字符串，模块名称，参数可选。如果没有提供该参数，模块的名字应该默认为模块加载器请求的指定脚本的名字
+* dependcies：数组，模块所依赖模块的数组
+* factory：对象、函数，模块初始化要执行的函数或对象
+
+`define.amd` 为了清晰的标识全局函数（为浏览器加载script必须的）遵从AMD编程接口，任何全局函数应该有一个"amd"的属性，它的值为一个对象。这样可以防止与现有的定义了define函数但不遵从AMD编程接口的代码相冲突。
+
+```
+// 创建名为 alpha 模块，使用了require，exports，和名为"beta"的模块
+define("alpha", ["require", "exports", "beta"], function (require, exports, beta) {
+    exports.verb = function() {
+       return beta.verb()
+        //Or:
+       return require("beta").verb()
+   }
+});
+
+// 返回匿名模块
+define(["alpha"], function (alpha) {
+    return {
+        verb: function(){
+            return alpha.verb() + 2
+        }
+    ;
+});
+
+// 没有依赖，返回一个对象模块
+define({
+    add: function (x, y) {
+        return x + y
     }
 })
 ```
+
+## <a id="es6">ES6 Module</a>
+
+ES6 实现了模块功能，旨在成为浏览器和服务器通用的模块解决方案。
+
+两个主要命令：
+* `import`：引入其他模块
+* `export`：模块对外接口
+
+### 用法
+
+```
+// math.js
+function add (x, y) {
+    return x + y
+}
+var num = 1
+export {add, num}
+
+// index.js
+import { add, num } from './math.js'
+console.log(add(100, num))
+```
+
+### export
+
+export 规则：
+
+* `export * from ''` 或 `export {} from ''` 重定向导出，重定向的命名并不能在本模块使用，只是搭建一个桥梁，例如：这个a并不能在本模块内使用。
+* `export {}` 与变量名绑定，命名导出
+* export Declaration，声明的同时，命名导出， Declaration就是： var, let, const, function, function*, class 这一类的声明语句
+* `export default`默认导出
+
+### import
+
+import 规则
+
+* `import { } from 'module'`， 导入 `module.js` 的命名导出
+* `import defaultExport from 'module'`， 导入module.js的默认导出
+* `import * as name from 'module'`， 将module.js的的所有导出合并为name的对象，key为导出的命名，默认导出的key为default
+* `import 'module'`，副作用，只是运行module，不为了导出内容例如 polyfill，多次调用次语句只能执行一次
+import('module')，动态导入返回一个 Promise，TC39的stage-3阶段被提出 tc39 import
+
+### ES6 Module 特点
+
+* 语法是静态的：`import` 会自动提升到代码顶层；在编译时确定导入和导出，能更加快速的查找依赖
+* 导出是绑定的：使用 `import` 被导入模块运行在严格模式下；被导入的变量是与原变量绑定/引用的，可以理解为 import 导入的变量无论是否为基本类型都是引用传递
+
+与 CommonJS 不同，ES6 输出是值的引用
+
+```
+// example.js
+var x = 1
+function addX (y) {
+    x += y
+    return x
+}
+
+export { x, addX }
+
+// index.js
+import { x, addX } from './example'
+console.log(addX(x, 2)) // 4
+console.log(x)          // 4
+```
+
+循环引用
+
+```
+// a.js
+import { b } from './b'
+console.log('a.js: ', b)
+export var a = 'a2'
+
+// b.js
+import { a } from './a'
+console.log('b.js: ', a)
+export var b = 'b2'
+
+// index.js
+import { a } from './a'
+import { b } from './b'
+
+console.log('index a: ', a)
+console.log('index b: ', b)
+```
+
+`index.js` 作为入口文件，最终输出结果
+
+```
+b.js:  undefined
+a.js:  b2
+index a:  a2
+index b:  b2
+```
+
+
+## 总结
+
+### ES6 与 CommonJS 区别
+
+1. CommonJS 模块输出的是一个值拷贝，ES6 Module 输出的是值的引用。
+2. CommonJS 是单个值导出，ES6 Module 可以导出多个。
+3. CommonJS 是动态语法可以写在判断里，ES6 Module 静态语法只能写在顶层。
+4. CommonJS 的 this 是当前模块，ES6 Module 的 this 是 undefined。
+5. CommonJS 是运行时加载，ES6 Module 是编译时输出接口。
+* 运行时加载: CommonJS 模块就是对象；即在输入时是先加载整个模块，生成一个对象，然后再从这个对象上面读取方法，这种加载称为“运行时加载”。
+* 编译时加载: ES6 模块不是对象，而是通过 export 命令显式指定输出的代码，import时采用静态命令的形式。即在import时可以指定加载某个输出值，而不是加载整个模块，这种加载称为“编译时加载”。
 
 # 参考文献
 
@@ -376,3 +595,6 @@ define(function (require, exports, module) {
 * [深入 CommonJs 与 ES6 Module](https://segmentfault.com/a/1190000017878394)
 * [JavaScript modules 模块 - MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Modules)
 * [CommonJS规范 - 阮一峰](https://javascript.ruanyifeng.com/nodejs/module.html)
+* [CMD 模块定义规范](https://github.com/seajs/seajs/issues/242)
+* [AMD 规范](https://github.com/amdjs/amdjs-api/wiki/AMD-(%E4%B8%AD%E6%96%87%E7%89%88))
+
