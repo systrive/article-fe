@@ -4,18 +4,18 @@
 
 ## 背景
 
-`JavaScript`程序本来很小，在早期，它们大多被用来执行独立的脚本任务，在Web页面实现简单的交互逻辑，一般不需要多大脚本。随着web2.0时代的到来，Ajax技术的广泛应用，React、Vue等前端库的出现，有了运行大量`JavaScript`脚本的复杂程序，还有一些被用在其他环境（例如 `Node.js`）。因此，有必要考虑将`JavaScript`程序拆分为可按需导入的单独模块的机制。
+`JavaScript` 程序本来很小，在早期，它们大多被用来执行独立的脚本任务，在Web页面实现简单的交互逻辑，一般不需要多大脚本。随着web2.0时代的到来，Ajax技术的广泛应用，React、Vue等前端库的出现，有了运行大量`JavaScript`脚本的复杂程序，还有一些被用在其他环境（例如 `Node.js`）。因此，有必要考虑将`JavaScript`程序拆分为可按需导入的单独模块的机制。
 
 > 模块：实现特定功能的相互独立的一组方法。
 
-因为有了模块，我们能更好的管理网页的业务逻辑，可以按照自己的需求去设计、使用各种模块。JS 模块规范有很多，目前比较流行的有：
+因为有了模块，我们能更好的管理网页的业务逻辑，可以按照自己的需求去设计、使用各种模块。JS 模块规范有很多，目前比较流行的有：
 
-* [CommonJS](https://javascript.ruanyifeng.com/nodejs/module.html)
+* <a href="CommonJS">CommonJS</a>
 * AMD
 * CMD
 * ES6 module
 
-## CommonJS
+## <a id="CommonJS">CommonJS</a>
 
 ### 概述
 
@@ -23,7 +23,7 @@
 
 ### 基本用法
 
-模块有四个重要的变量：
+模块有四个重要的变量：
 1. module：对象，代表当前文件模块
 2. exports：对外暴露的接口
 3. require：加载模块文件，基本功能是执行一个`JavaScript`模块，然后返回该模块的 `exports` 对象。
@@ -46,7 +46,7 @@ console.log(example.x)       // 1
 console.log(example.addX(1)) // 2
 ```
 
-想要在多个文件分享变量，必须定义为`global`对象的属性，这种写法是不推荐的。
+想要在多个文件分享变量，必须定义为`global`对象的属性，这种写法是不推荐的。
 
 ```
 global.warning = true
@@ -60,7 +60,7 @@ CommonJS 模块特点如下：
 
 ### module 对象
 
-Node 内部提供一个 `Module` 构建函数，所有模块都是 `Module` 实例。每个模块内部都有一个`module`对象，代表当前模块。有以下属性：
+Node 内部提供一个 `Module` 构建函数，所有模块都是 `Module` 实例。每个模块内部都有一个`module`对象，代表当前模块。有以下属性：
 
 * module.id：模块的识别符，通常是带有绝对路径的模块文件名。
 * module.filename：模块的文件名，带有绝对路径。
@@ -83,7 +83,7 @@ Node 内部提供一个 `Module` 构建函数，所有模块都是 `Module` 实�
 var exports = module.exports
 ```
 
-对外输出模块接口时，可以向 `exports` 对象添加方法
+对外输出模块接口时，可以向 `exports` 对象添加方法
 
 ```
 exports.area = function (r) {
@@ -110,14 +110,14 @@ module.exports = 'Hello World'
 ### require
 #### require 加载规则
 
-`require`命令加载文件，后缀名默认为 `.js`，根据不同路径寻找模块文件：
+`require` 命令加载文件，后缀名默认为 `.js`，根据不同路径寻找模块文件：
 1. 如果参数字符串以 `"/"` 开头，则表示加载是一个位于绝对路径的模块文件。比如 `require('/home/user/project/foo.js')`
 2. 如果参数字符串以 `"./"` 开头，则表示加载位于相对路径（与当前执行脚本位置相比）的慕课。比如 `require('./circle')` 将加载当前脚本同一目录的 `circle.js`。
-3. 如果参数字符串不以 `"./"` 或 `"/"` 开头，则表示加载是一个默认提供的核心模块（位于 Node 的系统安装目录中），或者一个位于各级 `/node_modules` 目录的已安装模块（全局或局部安装）。
+3. 如果参数字符串不以 `"./"` 或 `"/"` 开头，则表示加载是一个默认提供的核心模块（位于 Node 的系统安装目录中），或者一个位于各级 `/node_modules` 目录的已安装模块（全局或局部安装）。
 比如，`/home/user/project/foo.js` 执行了 `require('bar.js')` 命令，Node 会依次搜索以下文件。
 ```
 /usr/local/lib/node/bar.js
-/home/user/projects/node_modules/bar.js
+/home/user/project/node_modules/bar.js
 /home/user/node_modules/bar.js
 /home/node_modules/bar.js
 /node_modules/bar.js
@@ -132,7 +132,7 @@ module.exports = 'Hello World'
 
 通常我们会把相关文件放在一个目录，便于组织。这时最好为该目录设置一个入口文件，让 `require` 方法可以通过这个入口文件，加载整个目录。
 
-在目录中防止一个 `package.json` 文件，并且将入口文件写入 `main` 字段。
+在目录中放置一个 `package.json` 文件，并且将入口文件写入 `main` 字段。
 
 ```
 // package.json
@@ -153,7 +153,7 @@ require('./example.js')
 require('./example.js').message = 'Hello'
 console.log(require('./example.js').nessage)    // "hello"
 ```
-上面例子中，连续三次使用 `require` 命令加载同一模块，第二次加载的时候，为输出的对象添加了一个 `message` 属性。但是第三次加载的时候，这个 message 属性依然存在，说明`require` 没有重新加载模块文件，而是输出了缓存。
+上面例子中，连续三次使用 `require` 命令加载同一模块，第二次加载的时候，为输出的对象添加了一个 `message` 属性。但是第三次加载的时候，这个 message 属性依然存在，说明`require` 没有重新加载模块文件，而是输出了缓存。
 
 如果想要多次执行某个模块，可以让该模块输出一个函数，然后每次 `require` 这个模块的时候，重新执行一下输出的函数。
 
@@ -209,7 +209,7 @@ console.log('index.js require a.js: ', require('./a.js').x)
 console.log('index.js require b.js: ', require('./b.js').x)
 ```
 
-上面三个 js 文件。其中 a.js 加载了 b.js，b.js 又加载了 a.js。这时，Node 返回 a.js 的不完整版本，所以执行结果如下：
+上面三个 js 文件。其中 a.js 加载了 b.js，b.js 又加载了 a.js。这时，Node 返回 a.js 的不完整版本，所以执行结果如下：
 
 ```
 $ node index.js
@@ -254,7 +254,7 @@ require.main === module
 
 ### 模块的加载机制
 
-CommonJS 模块的加载机制：模块输入是被输出值的拷贝，也就是说一旦输出一个基本类型的值，模块内部变化就影响不到这个值。这与ES6模块化有很大差异(后面会介绍)。
+CommonJS 模块的加载机制：模块输入是被输出值的拷贝，也就是说一旦输出一个基本类型的值，模块内部变化就影响不到这个值，这与ES6模块化有很大差异(后面会介绍)。
 
 ```
 // example.js
@@ -276,7 +276,7 @@ console.log(example.x)       // 1
 
 #### require 的内部处理流程
 
-`require` 命令是 CommonJS 规范之中，用来加载其他模块的命令，它其实不是一个全局命令，而是指向当前模块的 `module.require` 命令，而后者又调用 Node 的内部命令 `Module._load`。
+`require` 命令是 CommonJS 规范之中，用来加载其他模块的命令，它其实不是一个全局命令，而是指向当前模块的 `module.require` 命令，而后者又调用 Node 的内部命令 `Module._load`。
 
 ```
 Module._load = function (request, parent, isMain) {
@@ -284,7 +284,7 @@ Module._load = function (request, parent, isMain) {
     // 2. 如果缓存之中没有，就创建一个新的 Module 实例
     // 3. 将它保存到缓存
     // 4. 使用 module.load() 加载指定的模块文件
-    // 5. 如果加载/解析过程保存，就从缓存删除该模块
+    // 5. 如果加载/解析过程报错，就从缓存删除该模块
     // 6. 返回该模块的 module.exports
 }
 ```
@@ -310,7 +310,7 @@ Module.prototype._compole = function (content, filename) {
 > require.extensions：根据文件的后缀名，调用不同的执行函数
 ```
 
-一旦 `require` 函数准备完毕，整个索要加载的脚本内容，就被放到一个新的函数中，这样可以避免污染全局环境中。该函数的参数包括 `require`、`module`、`exports`，以及其他一些参数。
+一旦 `require` 函数准备完毕，整个索要加载的脚本内容，就被放到一个新的函数中，这样可以避免污染全局环境中。该函数的参数包括 `require`、`module`、`exports`，以及其他一些参数。
 
 ```
 (function (exports, require, module, __filename, __dirname) {
