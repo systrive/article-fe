@@ -437,7 +437,7 @@ CMD 是 SeaJS 在推广过程中对模块定义的规范化产出，而AMD 是 R
 
 CMD 与 AMD 很相似，只不过 AMD 推崇依赖前置、提前执行，CMD 推崇依赖就近、延迟执行。
 
-### 用法
+### 用法
 
 #### define
 
@@ -513,7 +513,7 @@ export 规则：
 * export Declaration，声明的同时，命名导出， Declaration就是： var, let, const, function, function*, class 这一类的声明语句
 * `export default`默认导出
 
-### import
+### import
 
 import 规则
 
