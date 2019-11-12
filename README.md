@@ -12,3 +12,5 @@
 * [重建二叉树](./algorithm/tree/constructor.md)
 * [斐波那契数列](./algorithm/array/fibonacci.md)
 * [排序算法](./algorithm/sort/sort.md)
+
+* [rand5()可以求出1-5任意一个随机数，利用 rand5() 求出 rand7()](./algorithm/toutiao/readme.md)
