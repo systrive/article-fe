@@ -513,7 +513,7 @@ export 规则：
 * export Declaration，声明的同时，命名导出， Declaration就是： var, let, const, function, function*, class 这一类的声明语句
 * `export default`默认导出
 
-### import
+### import
 
 import 规则
 
