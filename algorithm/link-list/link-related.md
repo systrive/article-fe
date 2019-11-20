@@ -5,8 +5,8 @@
 LeetCode 链接：
 * 反转链表：https://leetcode.com/problems/reverse-linked-list/
 * 两两交换链表中的节点：https://leetcode.com/problems/swap-nodes-in-pairs/
-* 环形链表（一）：https://leetcode.com/problems/linked-list-cycle
-* 环形链表（二）：https://leetcode.com/problems/linked-list-cycle-ii
+* 环形链表（一）：https://leetcode.com/problems/linked-list-cycle
+* 环形链表（二）：https://leetcode.com/problems/linked-list-cycle-ii
 * https://leetcode.com/problems/reverse-nodes-in-k-group
 
 链表（Linked List）是一种常见的基础数据结构，是一种线性表，但是并不会按线性的顺序存储数据，而是在每一个节点里存到下一个节点的指针（Pointer）。
@@ -91,7 +91,7 @@ var swapPairs = function(head) {
 
 ## 判断链表是否有环
 
-LeetCode：https://leetcode.com/problems/linked-list-cycle/
+LeetCode：https://leetcode.com/problems/linked-list-cycle/
 
 给定一个链表，判断链表中是否有环。
 
@@ -111,7 +111,7 @@ var swapPairs = function(head) {
 输入：head = [1,2], pos = 0
 输出：true
 解释：链表中有一个环，其尾部连接到第一个节点。
-![示例2](./link-list-circle2.jpg)
+![示例2](./link-list-circle-2.jpg)
 
 示例 3：
 
