@@ -33,7 +33,6 @@ var merge = function(intervals) {
     let len = intervals.length
     let start = intervals[0][0], end = intervals[0][1], result = []
     for (let i = 1; i < len; i++) {
-        console.log(intervals[i][0] > end)
         if (intervals[i][0] > end) {
             result.push([start, end])
             start = intervals[i][0]

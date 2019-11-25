@@ -9,6 +9,10 @@
 * <a href="#shellSort">桶排序法</a> ！！！！！！
 * <a href="#quickSort">快速排序法</a>
 
+排序算法时间复杂度
+
+![](array-sort-algorithm.jpg)
+
 ## <a id="bubbleSort">冒泡排序法</a>
 
 思路：比较相邻元素，前一个比后一个大，交换

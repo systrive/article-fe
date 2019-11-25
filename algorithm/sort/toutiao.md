@@ -197,7 +197,6 @@ var maxProfit = function(prices) {
     for (let i = 0; i < len; i++) {
         minIndex = prices[minIndex] < prices[i] ? minIndex : i
         if (prices[i] - prices[minIndex] > res) {
-            console.log(i, minIndex)
             minCurIndex = minIndex
             maxCurIndex = i
             res = prices[i] - prices[minIndex]
@@ -302,7 +301,6 @@ var generateParenthesis = function(n) {
 var generateParenthesis = function (n) {
     let result = []
     function bfs (tmp, openP, closeP) {
-        console.log('tmp', tmp, openP, closeP)
         if (openP == 0 && closeP == 0) {
             return result.push(tmp)
         }
