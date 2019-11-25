@@ -138,19 +138,159 @@ console.log(buf1)   // <Buffer 88 a0>
 console.log(buf2)   // <Buffer 88 13 70 17>
 ```
 
+当使用 TypedArray 的 `.buffer` 创建 Buffer 时，也可以通过传入 `byteIffset` 和 length 参数只使用 TypedArray 的一部分。
+
+```
+const arr = new Uint16Array(20)
+const buf = Buffer.from(arr.buffer, 0, 16)
+
+console.log(buf.length)     // 16
+```
+
+`Buffer.from` 与 `TypedArray.from` 有着不同的实现。具体来说，TypedArray 可以接受第二个参数作为映射函数，在类型数组的每个元素上调用：
+
+```
+TypedArray.from(source[, mapFn[, thisArg]])
+```
+
+`Buffer.from()` 则不支持映射函数的使用：
+
+* Buffer.from(array)
+* Buffer.from(buffer)
+* Buffer.from(arrayBufer[, byteOffset[, length]])
+* Buffer.from(string[, encoding])
+
 ## Buffer 与迭代器
 
+Buffer 实例可以使用 `for...of` 语法进行迭代：
 
+```
+const buf = Buffer.from([1, 2, 3])
+
+for (let b of buf) {
+    console.log(b)
+}
+// 1
+// 2
+// 3
+```
 
 ## Buffer 类
 
+Buffer 类是一个全局变量，用于直接处理二进制数据。它可以使用多种方式构建。
+
+* `new Buffer(buffer)`：已弃用，改为 `Buffer.from(buffer)`。
+* `new Buffer(size)`：已弃用，改为 `Buffer.alloc()` 或 `Buffer.allocUnsafe()`。
+* `new Buffer(string[, encoding])`：已弃用，改为 `Buffer.from(string[, encoding])`。
+
 ### Buffer.alloc(size[, fill[, encoding]])
+
+* size：<integer> 新 Buffer 的所需长度。
+* fill：<string> | <Buffer> | <Uint8Array> | <integer> 用于填充新 Buffer 的值。默认：`0`。
+* encoding：<string> 如果 fill 是一个字符串，则这是它的字符编码。默认值：`'utf8'`。
+
+```
+const buf = Buffer.alloc(5)
+
+console.log(buf)
+// <Buffer 00 00 00 00 00>
+```
+
+如果 `size` 大于 [buffer.constant.MAX_LENGTH](http://nodejs.cn/s/aBiAe5) 或小于 0，则抛出 [ERR_INVALID_OPT_VALUE](http://nodejs.cn/s/ouMFyk)。如果 size 为 0，则创建一个零长度的 Buffer。
+
+如果指定了 fill，则分配的 Buffer 通过调用 `buf.fill(fill)` 进行初始化。
+
+```
+const buf = Buffer.alloc(5, 'a')
+
+console.log(buf)
+// <Buffer 61 61 61 61 61>
+```
+
+如果同时指定了 fill 和 encoding，则分配的 Buffer 通过调用 `buf.fill(fill, encoding) 进行初始化。
+
+```
+const buf = Buffer.alloc(11, 'aGVsbG8gd29ybGQ=', 'base64')
+
+console.log(buf)
+// <Buffer 68 65 6c 6c 6f 20 77 6f 72 6c 64>
+```
+
+调用 Buffer.alloc() 可能比替代的 Buffer.allocUnsafe() 慢得多，但能确保新创建的 Buffer 实例的内容永远不会包含敏感的数据。
+
+如果 size 不是一个数字，则抛出 TypeError。
+
 
 ### Buffer.allocUnsafe(size)
 
+* size：<integer> 新建的 Buffer 长度。
+
+创建一个大小为 size 字节的新 Buffer。如果 size 大于 [buffer.constants.MAX_LENGTH](http://nodejs.cn/s/aBiAe5) 或小于 0，则抛出 [ERR_INVALID_OPT_VALUE](http://nodejs.cn/s/ouMFyk)。如果 size 为 0，则创建一个零长度的 Buffer。
+
+以这种方式创建的 Buffer 实力的底层内存是未初始化的。新创建的 Buffer 内容是未知的，可能包含敏感数据。使用 `Buffer.alloc()` 可以创建以零初始化的 Buffer 实例。
+
+```
+const buf = Buffer.allocUnsafe(10)
+
+console.log(buf)
+// (打印内容可能有所不同)<Buffer 0e 00 00 00 06 02 00 00 06 00>
+
+buf.fill(0)
+
+console.log(buf)
+// <Buffer 00 00 00 00 00 00 00 00 00 00>
+```
+
+如果 size 不是一个数字，则抛出 TypeError。
+
+Buffer 模块会预分配一个内部的大小为 [Buffer.poolSize](http://nodejs.cn/s/dZo4K3) 的 Buffer 实例，作为快速分配的内存池，用于使用 `Buffer.allocUnsafe()` 创建的 Buffer 实例、或废弃的 `new Buffer(size)` 构造器仅当 size 小于或等于 `Buffer.poolSize >> 1` (Buffer.poolSize 除以2再向下取整)。
+
+`Buffer.alloc(size, fill)` 和 `Buffer.allocUnsafe(size).fill(fill)` 区别： 
+
+*  `Buffer.alloc(size, fill)`：永远不会使用 Buffer 池。
+*  `Buffer.allocUnsafe(size).fill(fill)`：在 size 小于等于 `Buffer.poolSize` 的一半时将会使用内部的 Buffer 池。
+
+这个差异虽然很微妙，但当应用程序需要 `Buffer.allocUnsafe()` 提供额外性能时，则非常重要。
+
+
 ### Buffer.allocUnsafeSlow(size)
 
+* size：<integer> 新建的 Buffer 长度。
+
+创建一个大小为 size 字节的新 Buffer。如果 size 大于 [buffer.constants.MAX_LENGTH](http://nodejs.cn/s/aBiAe5) 或小于 0，则抛出 [ERR_INVALID_OPT_VALUE](http://nodejs.cn/s/ouMFyk)。如果 size 为 0，则创建一个零长度的 Buffer。
+
+以这种方式创建的 Buffer 实力的底层内存是未初始化的。新创建的 Buffer 内容是未知的，可能包含敏感数据。使用 `buf.fill(0)` 可以创建以零初始化的 Buffer 实例。
+
+当使用 `Buffer.allocUnsafe()` 创建新的 Buffer 实例时，如果要分配的内存小于 4KB ，则会从一个预分配的 Buffer 切割出来。这样可以避免垃圾回收机制因创建太多独立 Buffer 而过度使用。这种方式通过消除跟踪和清理的需要来改进性能和内存使用。
+
+当开发人员需要在内存池中保留一小块内存时，可以使用 `Buffer.allocUnsafeSlow()` 创建一个非内存池的 Buffer 实例并拷贝相关的比特位来。
+
+```
+// 需要保留一小块内存
+const store = []
+
+socket.on('readable', () => {
+    let data
+    while (null !== (data = readable.read())) {
+        // 为剩下的数据分配内存
+        const sb = Buffer.allocUnsafeSlow(10)
+
+        // 拷贝数据到新分配的内存
+        data.copy(sb, 0, 10)
+
+        store.push(data)
+    }
+})
+```
+
+`Buffer.allocUnsafeSlow()` 应该只用作开发人员已经在其应用程序中观察到过度的内存之后的最后手段。
+
+如果 size 不是一个数字，则抛出 TypeError。
+
 ### Buffer.byteLength(string[, encoding])
+
+* string：<string> | <Buffer> | <TypedArray> | <DataView> | <ArrayBuffer> | <SharedArrayBuffer> 要计算长度的值。
+* encoding：<string> 如果 string 是字符串，则这是它的字符编码。默认值 `'utf8'`。  
 
 ### Buffer.compare(buf1, buf2)
 
@@ -176,4 +316,4 @@ console.log(buf2)   // <Buffer 88 13 70 17>
 
 # 参考文献
 
-* [Buffer（缓冲器）](http://nodejs.cn/api/buffer.html#buffer_new_buffer_array)
+* [Buffer（缓冲器）](http://nodejs.cn/api/buffer.html)
